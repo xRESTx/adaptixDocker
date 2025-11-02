@@ -43,17 +43,7 @@ services:
       - ./adaptix_bot.jar:/app/adaptix_bot.jar:ro          # jar
       - ./app.properties:/app/config/app.properties:ro     # конфиг
     # стартуем с inline-скриптом (без внешних файлов)
-    command: >
-      bash -c "
-        echo 'Waiting for Postgres...'
-        until pg_isready -h postgres -p 5432 -U $${POSTGRES_USER:-postgres} >/dev/null 2>&1; do sleep 1; done
-        echo 'Waiting for Redis...'
-        until redis-cli -h redis -p 6379 ping >/dev/null 2>&1; do sleep 1; done
-        echo 'Starting bot...'
-        exec java -XX:+UseContainerSupport -Xmx1g
-             -Dspring.config.location=file:/app/config/app.properties
-             -jar /app/adaptix_bot.jar
-      "
+    command: ["java", "-XX:+UseContainerSupport", "-Xmx1g", "-cp", "/app/config", "-jar", "/app/adaptix_bot.jar"]
 
 volumes:
   pg_data:
