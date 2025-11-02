@@ -1,16 +1,19 @@
 FROM eclipse-temurin:17-jre-jammy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    netcat-openbsd && rm -rf /var/lib/apt/lists/*
+    postgresql-client redis-tools && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY wait-for-it.sh /usr/local/bin/
+# 1. wrapper script (no external files needed)
+RUN printf '#!/bin/bash\n\
+until pg_isready -h postgres -p 5432 -U ${POSTGRES_USER:-postgres}; do sleep 1; done\n\
+until redis-cli -h redis -p 6379 ping; do sleep 1; done\n\
+exec java -XX:+UseContainerSupport -Xmx1g \
+     -Dspring.config.location=file:/app/config/app.properties \
+     -jar /app/adaptix_bot.jar\n' > /entry.sh && chmod +x /entry.sh
+
+# 2. copy your jar
 COPY adaptix_bot.jar app.jar
 
-RUN chmod +x /usr/local/bin/wait-for-it.sh
-
-# ждём пока поднимутся postgres:5432 и redis:6379, потом стартуем
-ENTRYPOINT ["wait-for-it.sh", "postgres:5432", "--timeout=60", "--strict", "--", \
-            "wait-for-it.sh", "redis:6379", "--timeout=30", "--strict", "--"]
-CMD ["java", "-XX:+UseContainerSupport", "-Xmx1g", "-jar", "app.jar"]
+ENTRYPOINT ["/entry.sh"]
