@@ -29,8 +29,19 @@ services:
       retries: 5
 
   app:
-    image: eclipse-temurin:17-jre-jammy
+    image: eclipse-temurin:23-jre
     restart: unless-stopped
+    environment:
+      # чтобы ваш SessionFactory читал именно этот файл
+      JAVA_TOOL_OPTIONS: "-Dhibernate.cfg.xml=file:/app/hibernate.cfg.xml"
+      # и обычные переменные для подстановки
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,6 +51,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      - ./hibernate.docker.xml:/app/hibernate.cfg.xml:ro
       - ./adaptix_bot.jar:/app/adaptix_bot.jar:ro          # jar
       - ./app.properties:/app/config/app.properties:ro     # конфиг
     # стартуем с inline-скриптом (без внешних файлов)

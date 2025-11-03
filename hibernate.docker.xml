@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- Подключение к БД -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/AdaptixBot</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">Adaptix1</property>
+
+        <!-- HikariCP Connection Pool - самый быстрый для Java -->
+        <property name="hibernate.connection.provider_class">com.zaxxer.hikari.hibernate.HikariConnectionProvider</property>
+        <property name="hibernate.hikari.maximumPoolSize">20</property>
+        <property name="hibernate.hikari.minimumIdle">5</property>
+        <property name="hibernate.hikari.connectionTimeout">30000</property>
+        <property name="hibernate.hikari.idleTimeout">600000</property>
+        <property name="hibernate.hikari.maxLifetime">1800000</property>
+        <property name="hibernate.hikari.leakDetectionThreshold">60000</property>
+
+        <!-- Автоматическое создание таблиц -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Логгирование (отключено в продакшене) -->
+        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- Кэширование второго уровня (отключено для упрощения) -->
+        <property name="hibernate.cache.use_second_level_cache">false</property>
+        <property name="hibernate.cache.use_query_cache">false</property>
+
+        <!-- Оптимизация производительности -->
+        <property name="hibernate.jdbc.batch_size">20</property>
+        <property name="hibernate.order_inserts">true</property>
+        <property name="hibernate.order_updates">true</property>
+        <property name="hibernate.jdbc.batch_versioned_data">true</property>
+
+        <!-- Указываем классы-сущности -->
+        <mapping class="org.example.table.Photo"/>
+        <mapping class="org.example.table.Product"/>
+        <mapping class="org.example.table.Purchase"/>
+        <mapping class="org.example.table.User"/>
+    </session-factory>
+</hibernate-configuration>
