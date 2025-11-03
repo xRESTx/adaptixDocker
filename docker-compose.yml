@@ -51,7 +51,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./hibernate.docker.xml:/app/hibernate.cfg.xml:ro
       - ./adaptix_bot.jar:/app/adaptix_bot.jar:ro          # jar
       - ./app.properties:/app/config/app.properties:ro     # конфиг
     # стартуем с inline-скриптом (без внешних файлов)
