@@ -1,61 +1,13 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_HOST_AUTH_METHOD: trust
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 3s
-      timeout: 2s
-      retries: 10
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 3s
-      timeout: 2s
-      retries: 5
-
   app:
-    image: eclipse-temurin:23-jre
+    image: eclipse-temurin:17-jre
+    network_mode: host          # ← контейнер = хостовая сеть
     restart: unless-stopped
-    environment:
-      # чтобы ваш SessionFactory читал именно этот файл
-      JAVA_TOOL_OPTIONS: "-Dhibernate.cfg.xml=file:/app/hibernate.cfg.xml"
-      # и обычные переменные для подстановки
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file: .env
     ports:
-      - "8080:8080"
+      - "8080:8080"             # метрики (опционально)
     volumes:
-      - ./adaptix_bot.jar:/app/adaptix_bot.jar:ro          # jar
-      - ./app.properties:/app/config/app.properties:ro     # конфиг
-    # стартуем с inline-скриптом (без внешних файлов)
-    command: ["java", "-XX:+UseContainerSupport", "-Xmx1g", "-cp", "/app/config", "-jar", "/app/adaptix_bot.jar"]
-
-volumes:
-  pg_data:
-  redis_data:
+      - ./app.properties:/app/config/app.properties:ro
+      - ./adaptix_bot.jar:/app/adaptix_bot.jar:ro
+    command: ["java","-XX:+UseContainerSupport","-Xmx1g","-jar","/app/adaptix_bot.jar"]
