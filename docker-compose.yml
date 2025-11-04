@@ -4,6 +4,7 @@ services:
   app:
     image: eclipse-temurin:23-jre
     restart: unless-stopped
+    network_mode: host
     ports:
       - "8080:8080"
     volumes:
